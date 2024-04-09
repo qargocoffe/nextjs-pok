@@ -1,5 +1,6 @@
 import { Pokemon } from "@/pokemons";
 import { Metadata, ResolvedMetadata } from "next";
+import Error from "next/error";
 import Image from "next/image";
 
 interface Props {
@@ -8,22 +9,34 @@ interface Props {
     }
 }
 
-export async function generateMetadata({ params }: Props, parent: ResolvedMetadata) : Promise<Metadata> {
+export async function generateMetadata({ params }: Props, parent: ResolvedMetadata) : Promise<Metadata  | undefined>  {
+   try {
     const pokemon = await getPokemon(params.id);
 
+    if(pokemon)
+
     return {
-        title: `Character ${pokemon.name}`,
+        title: `Character ${pokemon!.name}`,
         description: `Description del ${pokemon.name}`
     }
+   } catch (error) {
+    return undefined;
+   }
 }
 
-const getPokemon = async(id: string) :Promise<Pokemon> => {
-    const pokemon = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`, {
+const getPokemon = async(id: string) :Promise<Pokemon | undefined> => {
+    try {
+        const pokemon = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`, {
         cache: 'force-cache'
     })
     .then(res => res.json());
 
     return pokemon;
+
+    } catch (error) {
+        return undefined;
+        
+    }
 }
 
 export default async function PokemonPage ({ params }:Props)  {
@@ -36,21 +49,21 @@ export default async function PokemonPage ({ params }:Props)  {
     <div className="relative flex flex-col items-center rounded-[20px] w-[700px] mx-auto bg-white bg-clip-border  shadow-lg  p-3">
       <div className="mt-2 mb-8 w-full">
         <h1 className="px-2 text-xl font-bold text-slate-700 capitalize">
-          #{pokemon.id} {pokemon.name}
+          #{pokemon!.id} {pokemon!.name}
         </h1>
         <div className="flex flex-col justify-center items-center">
           <Image
-            src={pokemon.sprites.other?.dream_world.front_default ?? ''}
+            src={pokemon!.sprites.other?.dream_world.front_default ?? ''}
             width={150}
             height={150}
-            alt={`Imagen del pokemon ${pokemon.name}`}
+            alt={`Imagen del pokemon ${pokemon!.name}`}
             className="mb-5"
           />
 
 
           <div className="flex flex-wrap">
             {
-              pokemon.moves.map(move => (
+              pokemon!.moves.map(move => (
                 <p key={move.move.name} className="mr-2 capitalize">{move.move.name}</p>
               ))
             }
@@ -63,7 +76,7 @@ export default async function PokemonPage ({ params }:Props)  {
           <p className="text-sm text-gray-600">Types</p>
           <div className="text-base font-medium text-navy-700 flex">
             {
-              pokemon.types.map(type => (
+              pokemon!.types.map(type => (
                 <p key={type.slot} className="mr-2 capitalize">{type.type.name}</p>
               ))
             }
@@ -74,7 +87,7 @@ export default async function PokemonPage ({ params }:Props)  {
           <p className="text-sm text-gray-600">Peso</p>
           <span className="text-base font-medium text-navy-700 flex">
             {
-              pokemon.weight
+              pokemon!.weight
             }
           </span>
         </div>
@@ -84,17 +97,17 @@ export default async function PokemonPage ({ params }:Props)  {
           <div className="flex justify-center">
 
             <Image
-              src={pokemon.sprites.front_default}
+              src={pokemon!.sprites.front_default}
               width={100}
               height={100}
-              alt={`sprite ${pokemon.name}`}
+              alt={`sprite ${pokemon!.name}`}
             />
 
             <Image
-              src={pokemon.sprites.back_default}
+              src={pokemon!.sprites.back_default}
               width={100}
               height={100}
-              alt={`sprite ${pokemon.name}`}
+              alt={`sprite ${pokemon!.name}`}
             />
 
           </div>
@@ -105,17 +118,17 @@ export default async function PokemonPage ({ params }:Props)  {
           <div className="flex justify-center">
 
             <Image
-              src={pokemon.sprites.front_shiny}
+              src={pokemon!.sprites.front_shiny}
               width={100}
               height={100}
-              alt={`sprite ${pokemon.name}`}
+              alt={`sprite ${pokemon!.name}`}
             />
 
             <Image
-              src={pokemon.sprites.back_shiny}
+              src={pokemon!.sprites.back_shiny}
               width={100}
               height={100}
-              alt={`sprite ${pokemon.name}`}
+              alt={`sprite ${pokemon!.name}`}
             />
 
           </div>
